@@ -66,5 +66,3 @@ mvn test
 ## 📄 License
 Distributed under the MIT License. See `LICENSE` for more information.
 
----
-**Developed by Antigravity** - *Building the future of educational technology.*
