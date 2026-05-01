@@ -1,68 +1,106 @@
-# EduPulse: Student Result Management System 🎓
+# EduResult - Student Result Management System 🎓 📊
 
-EduPulse is a professional-grade, full-stack application designed to manage student academic records efficiently. Built with a focus on modern UI/UX and secure backend architecture, it is ideal for educational institutions to track and display student performance.
+![EduResult Banner](assets/banner.png)
 
-## 🌟 Key Features
+## 🚀 Overview
+**EduResult** is a professional-grade, full-stack Student Result Management System designed to streamline academic record-keeping. Built with a robust **Spring Boot** backend and a high-performance **React.js** frontend, it provides a secure, scalable, and intuitive platform for educational institutions to manage students, subjects, and results with automated CGPA/SGPA calculations.
 
-### 👤 Role-Based Access Control
-- **Admin Portal**: Add, view, edit, and delete student records. View overall class statistics and export results.
-- **Student Portal**: Secure login to view subject-wise marks, aggregate percentage, and final grades.
+---
 
-### 📊 Advanced Analytics
-- **Dashboard**: Real-time stats including total students, average class score, and passing rates.
-- **Auto-Calculations**: Automated grade assignment (A+, A, B, etc.) and Pass/Fail status based on subject performance.
+## ✨ Key Features
 
-### 📥 Data Management
-- **Export to HTML**: Download student result tables for offline record-keeping.
-- **Search & Filter**: Quickly find students by roll number or name.
+### 🔐 1. Role-Based Access Control (RBAC)
+- **Admin**: Full control over students, faculty, and subject management.
+- **Faculty**: Specialized portal for entering marks and managing academic records.
+- **Student**: Personalized dashboard to view results, SGPA/CGPA trends, and academic history.
 
-### 🎨 Premium UI/UX
-- **Glassmorphism Design**: A modern, translucent interface with vibrant gradients.
-- **Responsive Layout**: Optimized for both desktop and mobile viewing.
-- **Interactive Elements**: Smooth transitions, micro-animations, and dynamic data loading.
+### 📊 2. Automated Result Generation
+- **Instant SGPA/CGPA Calculation**: Eliminates manual errors with real-time academic scoring.
+- **Multi-Semester Tracking**: Seamlessly manage data across various academic terms.
+- **Performance Analytics**: Visual feedback on student progress.
+
+### 🛡️ 3. Security & Integrity
+- **JWT Authentication**: Secure, stateless session management.
+- **Data Validation**: Robust backend validation to ensure data accuracy and integrity.
+- **Audit Ready**: Organized database schema (SQLite/MySQL) for clean reporting.
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: HTML5, CSS3 (Vanilla), JavaScript (ES6+), Lucide Icons.
-- **Backend**: Java, Spring Boot 3, Spring Security.
-- **Database**: JDBC Template, H2 (In-memory for testing) / MySQL compatible.
-- **Build Tool**: Maven.
-- **Testing**: JUnit 5.
+### Frontend
+- **Framework**: [React.js](https://reactjs.org/) (with [Vite](https://vitejs.dev/))
+- **Styling**: Vanilla CSS (Custom Design System)
+- **State Management**: React Context API
+- **Networking**: Axios
 
-## 🚀 Getting Started
+### Backend
+- **Framework**: [Spring Boot 3](https://spring.io/projects/spring-boot)
+- **Security**: Spring Security + JWT
+- **Persistence**: Spring Data JPA
+- **Database**: SQLite (Zero-Config) / MySQL
 
-### Prerequisites
-- Java 17 or higher.
-- Maven installed.
+---
 
-### Setup Instructions
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   ```
-2. **Database Configuration**:
-   - By default, the project uses **H2 in-memory database** for immediate testing.
-   - To switch to MySQL, update `src/main/resources/application.properties` with your MySQL credentials.
-
-3. **Run the Application**:
-   ```bash
-   mvn spring-boot:run
-   ```
-4. **Access the Portal**:
-   - Open `http://localhost:8080/index.html` in your browser.
-
-### Default Credentials
-| Role | Username | Password |
-| :--- | :--- | :--- |
-| **Admin** | `admin` | `admin123` |
-| **Student** | `2024-CS-01` | `password123` |
-
-## 🧪 Testing
-Run the unit test suite to verify business logic:
-```bash
-mvn test
+## 📂 Project Structure
+```text
+EduResult/
+├── backend/                # Spring Boot Backend
+│   ├── src/main/java/      # Java Source Code
+│   ├── src/main/resources/ # Configuration & Assets
+│   └── pom.xml             # Maven Dependencies
+├── frontend/               # React Frontend
+│   ├── src/                # UI Components & Logic
+│   ├── public/             # Static Assets
+│   └── package.json        # Node.js Dependencies
+├── assets/                 # Documentation Assets
+└── README.md               # Project Documentation
 ```
 
-## 📄 License
-Distributed under the MIT License. See `LICENSE` for more information.
+---
 
+## 🚦 Getting Started
+
+### Prerequisites
+- **Java**: JDK 17 or higher
+- **Node.js**: v18 or higher
+- **Maven**: (Bundled with `./mvnw`)
+
+### 1. Backend Setup
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+2. Run the application:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+3. **Initial Data Setup**: 
+   Once the server is running, trigger the initial user creation by sending a POST request to:
+   `http://localhost:8080/api/auth/setup`
+   *This creates default `admin/admin123` and `faculty/faculty123` accounts.*
+
+### 2. Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 🤝 Contributing
+Contributions are welcome! Feel free to open an issue or submit a pull request to help improve EduResult.
+
+## 📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+Built with ❤️ by [Your Name/GitHub Handle]
