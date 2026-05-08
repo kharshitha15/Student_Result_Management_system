@@ -8,18 +8,10 @@ services:
     envVars:
       - key: PORT
         value: 8080
-      - key: DB_HOST
+      - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: eduresult-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: eduresult-db
-          property: port
-      - key: DB_NAME
-        fromDatabase:
-          name: eduresult-db
-          property: database
+          property: connectionString
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: eduresult-db
@@ -33,4 +25,6 @@ services:
 
 databases:
   - name: eduresult-db
+    databaseName: eduresult
+    user: eduresult_user
     plan: free
