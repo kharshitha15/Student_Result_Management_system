@@ -35,13 +35,27 @@ public class DatabaseConfig {
     @Bean
     @Primary
     public DataSource dataSource() {
+        // Log all environment variables for debugging (safely)
+        System.out.println("--- ENVIRONMENT VARIABLES START ---");
+        System.getenv().forEach((k, v) -> {
+            if (k.contains("URL") || k.contains("PASSWORD") || k.contains("SECRET") || k.contains("KEY")) {
+                System.out.println(k + ": [REDACTED] (Length: " + (v != null ? v.length() : 0) + ")");
+            } else {
+                System.out.println(k + ": " + v);
+            }
+        });
+        System.out.println("--- ENVIRONMENT VARIABLES END ---");
+
         String url = null;
         String finalUrl = "";
         
         // Try SPRING_DATASOURCE_URL first, then DATABASE_URL
         String rawUrl = (springDbUrl != null && !springDbUrl.isEmpty()) ? springDbUrl : databaseUrl;
         
+        boolean isRender = System.getenv("RENDER") != null;
+
         if (rawUrl != null && !rawUrl.isEmpty()) {
+            System.out.println("DEBUG: Found raw URL in environment");
             if (rawUrl.startsWith("postgres://")) {
                 finalUrl = "jdbc:postgresql://" + rawUrl.substring(11);
             } else if (rawUrl.startsWith("jdbc:")) {
@@ -51,13 +65,18 @@ public class DatabaseConfig {
             }
         } 
         else if (dbHost != null && !dbHost.isEmpty() && !dbHost.contains("${")) {
+            System.out.println("DEBUG: Found DB_HOST in environment");
             finalUrl = "jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + dbName;
         } 
+        else if (isRender) {
+            System.out.println("DEBUG: Running on Render but no URL found! Defaulting to local postgres for connection check...");
+            finalUrl = "jdbc:postgresql://localhost:5432/eduresult";
+        }
         else {
+            System.out.println("DEBUG: Defaulting to SQLite");
             finalUrl = "jdbc:sqlite:eduresult.db";
         }
 
-        System.out.println("DEBUG: Raw DB URL found: " + (rawUrl != null ? "YES" : "NO"));
         System.out.println("DEBUG: Using Database URL: " + finalUrl.split("@")[finalUrl.split("@").length - 1]);
 
         DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
