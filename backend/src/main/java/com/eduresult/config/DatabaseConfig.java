@@ -63,8 +63,12 @@ public class DatabaseConfig {
 
         if (rawUrl != null && !rawUrl.isEmpty()) {
             logger.info("DEBUG: Found raw URL in environment");
-            if (rawUrl.startsWith("postgres://")) {
+            if (rawUrl.startsWith("jdbc:postgresql:")) {
+                finalUrl = rawUrl;
+            } else if (rawUrl.startsWith("postgres://")) {
                 finalUrl = "jdbc:postgresql://" + rawUrl.substring(11);
+            } else if (rawUrl.startsWith("postgresql://")) {
+                finalUrl = "jdbc:postgresql://" + rawUrl.substring(13);
             } else if (rawUrl.startsWith("jdbc:")) {
                 finalUrl = rawUrl;
             } else {
