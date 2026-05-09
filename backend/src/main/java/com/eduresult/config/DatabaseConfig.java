@@ -21,6 +21,9 @@ public class DatabaseConfig {
     @Value("${DATABASE_URL:}")
     private String databaseUrl;
 
+    @Value("${INTERNAL_DATABASE_URL:}")
+    private String internalDbUrl;
+
     @Value("${DB_HOST:}")
     private String dbHost;
 
@@ -52,8 +55,9 @@ public class DatabaseConfig {
 
         String finalUrl = "";
         
-        // Try SPRING_DATASOURCE_URL first, then DATABASE_URL
-        String rawUrl = (springDbUrl != null && !springDbUrl.isEmpty()) ? springDbUrl : databaseUrl;
+        // Try URLs in order of preference
+        String rawUrl = (springDbUrl != null && !springDbUrl.isEmpty()) ? springDbUrl : 
+                        (databaseUrl != null && !databaseUrl.isEmpty() ? databaseUrl : internalDbUrl);
         
         boolean isRender = System.getenv("RENDER") != null;
 
