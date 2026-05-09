@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+import java.net.URI;
 
 @Configuration
 public class DatabaseConfig {
@@ -34,72 +35,98 @@ public class DatabaseConfig {
     private String dbName;
 
     @Value("${SPRING_DATASOURCE_USERNAME:}")
-    private String username;
+    private String envUsername;
 
     @Value("${SPRING_DATASOURCE_PASSWORD:}")
-    private String password;
+    private String envPassword;
 
     @Bean
     @Primary
     public DataSource dataSource() {
-        // Log all environment variables for debugging (safely)
-        logger.info("--- ENVIRONMENT VARIABLES START ---");
-        System.getenv().forEach((k, v) -> {
-            if (k.contains("URL") || k.contains("PASSWORD") || k.contains("SECRET") || k.contains("KEY")) {
-                logger.info("{}: [REDACTED] (Length: {})", k, (v != null ? v.length() : 0));
-            } else {
-                logger.info("{}: {}", k, v);
-            }
-        });
-        logger.info("--- ENVIRONMENT VARIABLES END ---");
-
         String finalUrl = "";
-        
-        // Try URLs in order of preference
+        String finalUsername = envUsername;
+        String finalPassword = envPassword;
+
+        // 1. Pick the best URL from environment
         String rawUrl = (springDbUrl != null && !springDbUrl.isEmpty()) ? springDbUrl : 
                         (databaseUrl != null && !databaseUrl.isEmpty() ? databaseUrl : internalDbUrl);
-        
+
         boolean isRender = System.getenv("RENDER") != null;
 
         if (rawUrl != null && !rawUrl.isEmpty()) {
-            logger.info("DEBUG: Found raw URL in environment");
-            if (rawUrl.startsWith("jdbc:postgresql:")) {
-                finalUrl = rawUrl;
-            } else if (rawUrl.startsWith("postgres://")) {
-                finalUrl = "jdbc:postgresql://" + rawUrl.substring(11);
-            } else if (rawUrl.startsWith("postgresql://")) {
-                finalUrl = "jdbc:postgresql://" + rawUrl.substring(13);
-            } else if (rawUrl.startsWith("jdbc:")) {
-                finalUrl = rawUrl;
-            } else {
-                finalUrl = "jdbc:postgresql://" + rawUrl;
+            logger.info("DEBUG: Processing raw URL from environment...");
+            try {
+                // Clean the protocol for URI parsing if needed
+                String uriString = rawUrl;
+                if (uriString.startsWith("jdbc:postgresql://")) {
+                    uriString = uriString.substring(5); // Remove jdbc:
+                } else if (uriString.startsWith("postgresql://")) {
+                    // already fine
+                } else if (uriString.startsWith("postgres://")) {
+                    uriString = "postgresql://" + uriString.substring(11);
+                }
+
+                URI dbUri = new URI(uriString);
+                
+                // Extract credentials from URI if present
+                if (dbUri.getUserInfo() != null) {
+                    String[] userInfo = dbUri.getUserInfo().split(":");
+                    finalUsername = userInfo[0];
+                    if (userInfo.length > 1) {
+                        finalPassword = userInfo[1];
+                    }
+                }
+
+                // Construct clean JDBC URL (no credentials in the string)
+                String host = dbUri.getHost();
+                int port = dbUri.getPort();
+                String path = dbUri.getPath();
+                
+                if (port == -1) port = 5432;
+                
+                finalUrl = "jdbc:postgresql://" + host + ":" + port + path;
+                
+            } catch (Exception e) {
+                logger.warn("DEBUG: URI parsing failed, falling back to manual string manipulation: {}", e.getMessage());
+                // Fallback for non-standard URLs
+                if (rawUrl.contains("@")) {
+                    // Extract user:pass@host
+                    String withoutProtocol = rawUrl.contains("://") ? rawUrl.split("://")[1] : rawUrl;
+                    String credentials = withoutProtocol.split("@")[0];
+                    String hostPart = withoutProtocol.split("@")[1];
+                    
+                    if (credentials.contains(":")) {
+                        finalUsername = credentials.split(":")[0];
+                        finalPassword = credentials.split(":")[1];
+                    }
+                    finalUrl = "jdbc:postgresql://" + hostPart;
+                } else {
+                    finalUrl = rawUrl.startsWith("jdbc:") ? rawUrl : "jdbc:postgresql://" + rawUrl;
+                }
             }
         } 
         else if (dbHost != null && !dbHost.isEmpty() && !dbHost.contains("${")) {
-            logger.info("DEBUG: Found DB_HOST in environment");
             finalUrl = "jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + dbName;
         } 
         else if (isRender) {
-            logger.warn("DEBUG: Running on Render but no URL found! Defaulting to local postgres for connection check...");
+            // Last resort for Render
             finalUrl = "jdbc:postgresql://localhost:5432/eduresult";
         }
         else {
-            logger.info("DEBUG: Defaulting to SQLite");
             finalUrl = "jdbc:sqlite:eduresult.db";
         }
 
-        logger.info("DEBUG: Using Database URL: {}", finalUrl.split("@")[finalUrl.split("@").length - 1]);
+        // Final URL Sanity Check (Remove double prefixes if any)
+        if (finalUrl.startsWith("jdbc:postgresql://postgresql://")) {
+            finalUrl = "jdbc:postgresql://" + finalUrl.substring(31);
+        }
+
+        logger.info("DEBUG: Final JDBC URL: {}", finalUrl);
 
         DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
         dataSourceBuilder.url(finalUrl);
-        
-        if (username != null && !username.isEmpty() && !username.contains("${")) {
-            dataSourceBuilder.username(username);
-        }
-        
-        if (password != null && !password.isEmpty() && !password.contains("${")) {
-            dataSourceBuilder.password(password);
-        }
+        dataSourceBuilder.username(finalUsername);
+        dataSourceBuilder.password(finalPassword);
         
         if (finalUrl.startsWith("jdbc:postgresql:")) {
             dataSourceBuilder.driverClassName("org.postgresql.Driver");
