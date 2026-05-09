@@ -16,7 +16,16 @@ import org.springframework.context.annotation.Bean;
 		description = "REST API for managing student results, marks and CGPA"
 ))
 public class EduResultApplication {
+    private static final Logger logger = LoggerFactory.getLogger(EduResultApplication.class);
+
 	public static void main(String[] args) {
-		SpringApplication.run(EduResultApplication.class, args);
+		try {
+			SpringApplication.run(EduResultApplication.class, args);
+		} catch (Exception e) {
+			logger.error("CRITICAL STARTUP FAILURE: ", e);
+			System.err.println("CRITICAL STARTUP FAILURE: " + e.getMessage());
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 }

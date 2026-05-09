@@ -24,27 +24,28 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (userRepository.count() == 0) {
-            // Create Admin
+        // Create Admin if not exists
+        if (userRepository.findByUsername("admin").isEmpty()) {
             User admin = User.builder()
                     .username("admin")
                     .password(passwordEncoder.encode("admin123"))
                     .role(Role.ROLE_ADMIN)
                     .build();
             userRepository.save(admin);
+            logger.info("Default admin user created: admin/admin123");
+        }
 
-            // Create Faculty
+        // Create Faculty if not exists
+        if (userRepository.findByUsername("faculty").isEmpty()) {
             User faculty = User.builder()
                     .username("faculty")
                     .password(passwordEncoder.encode("faculty123"))
                     .role(Role.ROLE_FACULTY)
                     .build();
             userRepository.save(faculty);
-            
-            logger.info("Default users created: admin/admin123 and faculty/faculty123");
-        } else {
-            logger.info("Database already seeded with default users.");
+            logger.info("Default faculty user created: faculty/faculty123");
         }
+        
         logger.info("Backend Data Initialization Complete.");
     }
 }
