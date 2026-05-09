@@ -3,12 +3,16 @@ package com.eduresult.service;
 import com.eduresult.model.Role;
 import com.eduresult.model.User;
 import com.eduresult.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DataInitializer implements CommandLineRunner {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -37,7 +41,10 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             userRepository.save(faculty);
             
-            System.out.println("Default users created: admin/admin123 and faculty/faculty123");
+            logger.info("Default users created: admin/admin123 and faculty/faculty123");
+        } else {
+            logger.info("Database already seeded with default users.");
         }
+        logger.info("Backend Data Initialization Complete.");
     }
 }
