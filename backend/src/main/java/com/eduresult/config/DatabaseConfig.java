@@ -43,18 +43,26 @@ public class DatabaseConfig {
     @Bean
     @Primary
     public DataSource dataSource() {
+        System.out.println("**************************************************");
+        System.out.println("DATABASE_DEBUG_CHECK: Starting DataSource Configuration");
+        System.out.println("**************************************************");
+        
         String finalUrl = "";
         String finalUsername = envUsername;
         String finalPassword = envPassword;
 
-        // 1. Pick the best URL from environment
-        String rawUrl = (springDbUrl != null && !springDbUrl.isEmpty()) ? springDbUrl : 
-                        (databaseUrl != null && !databaseUrl.isEmpty() ? databaseUrl : internalDbUrl);
+        // Try all possible environment variables for the URL
+        String rawUrl = springDbUrl;
+        if (rawUrl == null || rawUrl.isEmpty()) rawUrl = databaseUrl;
+        if (rawUrl == null || rawUrl.isEmpty()) rawUrl = internalDbUrl;
+        if (rawUrl == null || rawUrl.isEmpty()) rawUrl = System.getenv("JDBC_DATABASE_URL");
+        if (rawUrl == null || rawUrl.isEmpty()) rawUrl = System.getenv("DATABASE_URL");
 
-        boolean isRender = System.getenv("RENDER") != null;
-
+        boolean isRender = System.getenv("RENDER") != null || System.getenv("RENDER_SERVICE_ID") != null;
+        
+        logger.info("DEBUG: Environment Check - isRender: {}, rawUrl present: {}", isRender, (rawUrl != null && !rawUrl.isEmpty()));
         if (rawUrl != null && !rawUrl.isEmpty()) {
-            logger.info("DEBUG: Processing raw URL from environment...");
+            System.out.println("DATABASE_DEBUG_CHECK: Found raw URL: " + rawUrl.split("@")[rawUrl.split("@").length - 1]);
             try {
                 // Clean the protocol for URI parsing if needed
                 String uriString = rawUrl;
